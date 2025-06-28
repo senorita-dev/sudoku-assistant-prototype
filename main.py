@@ -11,14 +11,23 @@ app.layout = html.Div(
         dcc.Store(id="sudoku-data", storage_type="memory"),
         html.H1("Sudoku"),
         html.Div(id="sudoku-div"),
+        html.Button("New", id="new-btn"),
         html.Div(
             [
-                html.Button("New", id="new-btn"),
                 html.Button("⏮", id="jump-to-start-btn"),
                 html.Button("◀", id="previous-btn"),
                 html.Button("▶", id="next-btn"),
                 html.Button("⏭", id="jump-to-end-btn"),
-            ]
+                dcc.Slider(
+                    id="step-index-slider",
+                    min=None,
+                    max=None,
+                    step=1,
+                    marks=None,
+                    tooltip={"always_visible": True, "placement": "bottom"},
+                ),
+            ],
+            id="sudoku-solution-controls",
         ),
         html.Div(id="sudoku-step"),
     ],
@@ -57,13 +66,28 @@ def render_sudoku_board(data: type_defs.SudokuData | None):
 
 
 @app.callback(
+    Output("sudoku-solution-controls", "style"),
+    State("sudoku-solution-controls", "style"),
+    Input("sudoku-data", "data"),
+)
+def toggle_solution_controls_display(style, data: type_defs.SudokuData | None):
+    if data is None:
+        return {"display": "none"}
+    try:
+        if style["display"] == "block":
+            return no_update
+    finally:
+        return {"display": "block"}
+
+
+@app.callback(
     Output("jump-to-start-btn", "disabled"),
     Output("previous-btn", "disabled"),
     Output("next-btn", "disabled"),
     Output("jump-to-end-btn", "disabled"),
     Input("sudoku-data", "data"),
 )
-def toggle_solution_step_buttons(data: type_defs.SudokuData | None):
+def toggle_solution_controls_disabled(data: type_defs.SudokuData | None):
     if data is None:
         return [True, True, True, True]
     index = data["step_index"]
@@ -76,12 +100,16 @@ def toggle_solution_step_buttons(data: type_defs.SudokuData | None):
 
 @app.callback(
     Output("sudoku-data", "data"),
+    Output("step-index-slider", "min"),
+    Output("step-index-slider", "max"),
+    Output("step-index-slider", "value"),
     State("sudoku-data", "data"),
     Input("new-btn", "n_clicks"),
     Input("jump-to-start-btn", "n_clicks"),
     Input("previous-btn", "n_clicks"),
     Input("next-btn", "n_clicks"),
     Input("jump-to-end-btn", "n_clicks"),
+    Input("step-index-slider", "value"),
     prevent_initial_call=True,
 )
 def update_sudoku_data(
@@ -91,44 +119,57 @@ def update_sudoku_data(
     previous_btn_n_clicks,
     next_btn_n_clicks,
     jump_to_end_btn_n_clicks,
+    step_index_slider_value,
 ):
     if ctx.triggered_id == "new-btn":
         sudoku = methods.SudokuManager()
         sudoku.backtrack_solve()
-        return {
-            "board": sudoku.board,
-            "puzzle": sudoku.board,
-            "steps": sudoku.steps,
-            "step_index": -1,
-        }
+        return (
+            {
+                "puzzle": sudoku.board,
+                "board": sudoku.board,
+                "steps": sudoku.steps,
+                "step_index": -1,
+            },
+            0,
+            len(sudoku.steps),
+            0,
+        )
+
     steps = data["steps"]
     index = data["step_index"]
 
     if ctx.triggered_id == "jump-to-start-btn":
         if index == -1:
-            return no_update
+            return no_update, no_update, no_update, no_update
         data["step_index"] = -1
-        return apply_steps(data)
+        return apply_steps(data), no_update, no_update, data["step_index"] + 1
 
     if ctx.triggered_id == "previous-btn":
         if index == -1:
-            return no_update
+            return no_update, no_update, no_update, no_update
         data["step_index"] -= 1
-        return apply_steps(data)
+        return apply_steps(data), no_update, no_update, data["step_index"] + 1
 
     if ctx.triggered_id == "next-btn":
         if index == len(steps) - 1:
-            return no_update
+            return no_update, no_update, no_update, no_update
         data["step_index"] += 1
-        return apply_steps(data)
+        return apply_steps(data), no_update, no_update, data["step_index"] + 1
 
     if ctx.triggered_id == "jump-to-end-btn":
         if index == len(steps) - 1:
-            return no_update
+            return no_update, no_update, no_update, no_update
         data["step_index"] = len(steps) - 1
-        return apply_steps(data)
+        return apply_steps(data), no_update, no_update, data["step_index"] + 1
 
-    return no_update
+    if ctx.triggered_id == "step-index-slider":
+        if index == step_index_slider_value - 1:
+            return no_update, no_update, no_update, no_update
+        data["step_index"] = step_index_slider_value - 1
+        return apply_steps(data), no_update, no_update, data["step_index"] + 1
+
+    return no_update, no_update, no_update, no_update
 
 
 def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
@@ -138,7 +179,6 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
         data["step_index"] = -1
         return data
     board = methods.copy_board(data["puzzle"])
-    index = min(index, len(steps) - 1)
     for curr_step_index in range(index + 1):
         y, x, digit = steps[curr_step_index]
         board[y][x] = digit
