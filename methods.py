@@ -12,26 +12,6 @@ def copy_board(board: Board) -> Board:
     return [row.copy() for row in board]
 
 
-def transpose(board: Board) -> Board:
-    new_board = empty_board()
-    for rowIndex, row in enumerate(board):
-        for colIndex, cell in enumerate(row):
-            new_board[rowIndex][colIndex] = board[colIndex][rowIndex]
-    return new_board
-
-
-def get_square(board: Board, y: int, x: int) -> list[int | None]:
-    min_y = (y // 3) * 3
-    max_y = (y // 3) * 3 + 3
-    min_x = (x // 3) * 3
-    max_x = (x // 3) * 3 + 3
-    return [
-        board[curr_y][curr_x]
-        for curr_x in range(min_x, max_x)
-        for curr_y in range(min_y, max_y)
-    ]
-
-
 class SudokuManager:
     def __init__(self):
         self.puzzle: Board = Sudoku(seed=randrange(sys.maxsize)).board
@@ -66,8 +46,26 @@ class SudokuManager:
     def _check_new_digit_valid(self, y: int, x: int, digit: int) -> bool:
         if self.board[y].count(digit):
             return False
-        if transpose(self.board)[x].count(digit):
+        if self._get_transpose()[x].count(digit):
             return False
-        if get_square(self.board, y, x).count(digit):
+        if self._get_square(y, x).count(digit):
             return False
         return True
+
+    def _get_transpose(self):
+        new_board = empty_board()
+        for y in range(9):
+            for x in range(9):
+                new_board[y][x] = self.board[x][y]
+        return new_board
+
+    def _get_square(self, y: int, x: int) -> list[int | None]:
+        min_y = (y // 3) * 3
+        max_y = (y // 3) * 3 + 3
+        min_x = (x // 3) * 3
+        max_x = (x // 3) * 3 + 3
+        return [
+            self.board[curr_y][curr_x]
+            for curr_x in range(min_x, max_x)
+            for curr_y in range(min_y, max_y)
+        ]
