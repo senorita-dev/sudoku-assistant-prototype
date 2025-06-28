@@ -126,8 +126,8 @@ def update_sudoku_data(
         sudoku.logic_solve()
         return (
             {
-                "puzzle": sudoku.board,
-                "board": sudoku.board,
+                "puzzle": sudoku.puzzle,
+                "board": sudoku.puzzle,
                 "steps": sudoku.steps,
                 "step_index": -1,
             },

@@ -1,7 +1,7 @@
 from sudoku import Sudoku, sys
 from random import randrange
 import sys
-from type_defs import Board, Step, SudokuData, TypedDict
+from type_defs import Board, Step
 
 
 def empty_board() -> Board:
@@ -38,6 +38,15 @@ class SudokuManager:
     def logic_solve(self) -> bool:
         if not self._candidates_board():
             return False
+        solving_methods = [self._naked_single]
+        progress_made = True
+        while progress_made:
+            progress_made = False
+            for method in solving_methods:
+                if not method():
+                    continue
+                progress_made = True
+                break
         return False
 
     def _find_next_empty_pos(self, board: Board) -> tuple[int, int] | None:
@@ -57,7 +66,7 @@ class SudokuManager:
             return False
         return True
 
-    def _get_transpose(self):
+    def _get_transpose(self) -> Board:
         new_board = empty_board()
         for y in range(9):
             for x in range(9):
@@ -89,4 +98,29 @@ class SudokuManager:
                 if len(digits) == 0:
                     solvable = False
                 self.board[y][x] = digits
+        self.puzzle = copy_board(self.board)
         return solvable
+
+    def _update_candidates_for_new_cell(self, y: int, x: int):
+        digit = self.board[y][x]
+        for cells in (self.board[y], self._get_transpose()[x], self._get_square(y, x)):
+            for cell in cells:
+                if not isinstance(cell, list) or digit not in cell:
+                    continue
+                cell.remove(digit)
+        return
+
+    def _naked_single(self) -> bool:
+        progress_made = False
+        for y in range(9):
+            for x in range(9):
+                cell = self.board[y][x]
+                if not isinstance(cell, list) or len(cell) != 1:
+                    continue
+                digit = cell[0]
+                step: Step = (y, x, digit)
+                self.steps.append(step)
+                self.board[y][x] = digit
+                self._update_candidates_for_new_cell(y, x)
+                progress_made = True
+        return progress_made
