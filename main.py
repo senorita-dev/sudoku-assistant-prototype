@@ -62,7 +62,6 @@ def render_sudoku_board(data: type_defs.SudokuData | None):
     Output("next-btn", "disabled"),
     Output("jump-to-end-btn", "disabled"),
     Input("sudoku-data", "data"),
-    prevent_initial_call=True,
 )
 def toggle_solution_step_buttons(data: type_defs.SudokuData | None):
     if data is None:
