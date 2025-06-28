@@ -35,6 +35,11 @@ class SudokuManager:
             self.board[y][x] = None
         return False
 
+    def logic_solve(self) -> bool:
+        if not self._candidates_board():
+            return False
+        return False
+
     def _find_next_empty_pos(self, board: Board) -> tuple[int, int] | None:
         for y in range(9):
             for x in range(9):
@@ -69,3 +74,19 @@ class SudokuManager:
             for curr_x in range(min_x, max_x)
             for curr_y in range(min_y, max_y)
         ]
+
+    def _candidates_board(self) -> bool:
+        solvable = True
+        for y in range(9):
+            for x in range(9):
+                if self.board[y][x] is not None:
+                    continue
+                digits = [
+                    digit
+                    for digit in range(1, 10)
+                    if self._check_new_digit_valid(y, x, digit)
+                ]
+                if len(digits) == 0:
+                    solvable = False
+                self.board[y][x] = digits
+        return solvable

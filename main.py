@@ -123,7 +123,7 @@ def update_sudoku_data(
 ):
     if ctx.triggered_id == "new-btn":
         sudoku = methods.SudokuManager()
-        sudoku.backtrack_solve()
+        sudoku.logic_solve()
         return (
             {
                 "puzzle": sudoku.board,
