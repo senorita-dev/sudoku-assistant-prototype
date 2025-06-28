@@ -95,47 +95,56 @@ def update_sudoku_data(
     if ctx.triggered_id == "new-btn":
         sudoku = methods.SudokuManager()
         sudoku.backtrack_solve()
-        return {"board": sudoku.board, "steps": sudoku.steps, "step_index": -1}
-
-    board = data["board"]
+        return {
+            "board": sudoku.board,
+            "puzzle": sudoku.board,
+            "steps": sudoku.steps,
+            "step_index": -1,
+        }
     steps = data["steps"]
     index = data["step_index"]
 
     if ctx.triggered_id == "jump-to-start-btn":
         if index == -1:
             return no_update
-        for curr_step_index in range(index - 1, -1, -1):
-            y, x, _ = steps[curr_step_index]
-            board[y][x] = None
         data["step_index"] = -1
-        return data
+        return apply_steps(data)
 
     if ctx.triggered_id == "previous-btn":
         if index == -1:
             return no_update
         data["step_index"] -= 1
-        y, x, _ = steps[data["step_index"]]
-        board[y][x] = None
-        return data
+        return apply_steps(data)
 
     if ctx.triggered_id == "next-btn":
         if index == len(steps) - 1:
             return no_update
-        y, x, digit = steps[data["step_index"]]
-        board[y][x] = digit
         data["step_index"] += 1
-        return data
+        return apply_steps(data)
 
     if ctx.triggered_id == "jump-to-end-btn":
         if index == len(steps) - 1:
             return no_update
-        for curr_step_index in range(index, len(steps)):
-            y, x, digit = steps[curr_step_index]
-            board[y][x] = digit
-        data["step_index"] = curr_step_index
-        return data
+        data["step_index"] = len(steps) - 1
+        return apply_steps(data)
 
     return no_update
+
+
+def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
+    steps = data["steps"]
+    index = data["step_index"]
+    if index < -1 or index > len(steps):
+        data["step_index"] = -1
+        return data
+    board = methods.copy_board(data["puzzle"])
+    index = min(index, len(steps) - 1)
+    for curr_step_index in range(index + 1):
+        y, x, digit = steps[curr_step_index]
+        board[y][x] = digit
+    data["board"] = board
+    data["step_index"] = index
+    return data
 
 
 if __name__ == "__main__":

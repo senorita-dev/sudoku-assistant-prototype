@@ -7,6 +7,7 @@ Step = tuple[int, int, int]
 
 
 class SudokuData(TypedDict):
-    board: Board
+    board: ReductionBoard
+    puzzle: Board
     steps: list[Step]
     step_index: int
