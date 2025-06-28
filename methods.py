@@ -44,7 +44,7 @@ class SudokuManager:
             return True
         y, x = pos
         for digit in range(1, 10):
-            if not self._check_new_digit_valid(self.copy, y, x, digit):
+            if not self._check_new_digit_valid(y, x, digit):
                 continue
             self.copy[y][x] = digit
             step: Step = (y, x, digit)
@@ -63,11 +63,11 @@ class SudokuManager:
                 return (y, x)
         return None
 
-    def _check_new_digit_valid(self, board: Board, y: int, x: int, digit: int) -> bool:
-        if board[y].count(digit):
+    def _check_new_digit_valid(self, y: int, x: int, digit: int) -> bool:
+        if self.board[y].count(digit):
             return False
-        if transpose(board)[x].count(digit):
+        if transpose(self.board)[x].count(digit):
             return False
-        if get_square(board, y, x).count(digit):
+        if get_square(self.board, y, x).count(digit):
             return False
         return True
