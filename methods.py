@@ -34,25 +34,25 @@ def get_square(board: Board, y: int, x: int) -> list[int | None]:
 
 class SudokuManager:
     def __init__(self):
-        self.board: Board = Sudoku(seed=randrange(sys.maxsize)).board
-        self.copy: Board = copy_board(self.board)
+        self.puzzle: Board = Sudoku(seed=randrange(sys.maxsize)).board
+        self.board: Board = copy_board(self.puzzle)
         self.steps: list[Step] = []
 
     def backtrack_solve(self) -> bool:
-        pos = self._find_next_empty_pos(self.copy)
+        pos = self._find_next_empty_pos(self.board)
         if pos is None:
             return True
         y, x = pos
         for digit in range(1, 10):
             if not self._check_new_digit_valid(y, x, digit):
                 continue
-            self.copy[y][x] = digit
+            self.board[y][x] = digit
             step: Step = (y, x, digit)
             self.steps.append(step)
             if self.backtrack_solve():
                 return True
             self.steps.pop()
-            self.copy[y][x] = None
+            self.board[y][x] = None
         return False
 
     def _find_next_empty_pos(self, board: Board) -> tuple[int, int] | None:
