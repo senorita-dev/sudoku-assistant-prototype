@@ -2,7 +2,7 @@ from dash import html
 import type_defs
 
 
-def sudoku_table(board: type_defs.ReductionBoard) -> html.Table:
+def sudoku_table(board: type_defs.CandidatesBoard) -> html.Table:
     return html.Table(
         [
             html.Tbody(
@@ -20,7 +20,7 @@ def sudoku_table(board: type_defs.ReductionBoard) -> html.Table:
     )
 
 
-def sudoku_cell(board: type_defs.ReductionBoard, y: int, x: int):
+def sudoku_cell(board: type_defs.CandidatesBoard, y: int, x: int):
     cell = board[y][x]
     return html.Td(
         (
