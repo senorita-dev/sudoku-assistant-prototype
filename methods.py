@@ -1,15 +1,16 @@
 from sudoku import Sudoku, sys
 from random import randrange
 import sys
-from type_defs import Board, Step
+from type_defs import Board, CandidatesBoard, Step
+from copy import deepcopy
 
 
 def empty_board() -> Board:
     return [[None for _ in range(9)] for _ in range(9)]
 
 
-def copy_board(board: Board) -> Board:
-    return [row.copy() for row in board]
+def copy_board(board: CandidatesBoard) -> CandidatesBoard:
+    return deepcopy(board)
 
 
 class SudokuManager:
