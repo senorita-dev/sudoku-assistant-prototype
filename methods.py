@@ -1,4 +1,4 @@
-from sudoku import Sudoku, sys
+from sudoku import Sudoku
 from random import randrange
 import sys
 from type_defs import Board, CandidatesBoard, Step
@@ -18,23 +18,6 @@ class SudokuManager:
         self.puzzle: Board = Sudoku(seed=randrange(sys.maxsize)).board
         self.board: Board = copy_board(self.puzzle)
         self.steps: list[Step] = []
-
-    def backtrack_solve(self) -> bool:
-        pos = self._find_next_empty_pos(self.board)
-        if pos is None:
-            return True
-        y, x = pos
-        for digit in range(1, 10):
-            if not self._check_new_digit_valid(y, x, digit):
-                continue
-            self.board[y][x] = digit
-            step: Step = (y, x, digit)
-            self.steps.append(step)
-            if self.backtrack_solve():
-                return True
-            self.steps.pop()
-            self.board[y][x] = None
-        return False
 
     def logic_solve(self) -> bool:
         if not self._candidates_board():
@@ -138,7 +121,14 @@ class SudokuManager:
                     continue
                 digit = cell[0]
                 self.board[y][x] = digit
-                step: Step = (y, x, digit, self._update_candidates_for_new_cell(y, x))
+                step: Step = {
+                    "type": "fill",
+                    "digit": digit,
+                    "position": (y, x),
+                    "candidates_removed_positions": self._update_candidates_for_new_cell(
+                        y, x
+                    ),
+                }
                 self.steps.append(step)
                 progress_made = True
         return progress_made

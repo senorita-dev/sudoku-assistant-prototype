@@ -48,7 +48,8 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
         return [html.H3(f"Step 0 of {len(data["steps"])}")]
 
     step = data["steps"][data["step_index"]]
-    y, x, digit, removed_positions = step
+    y, x = step["position"]
+    digit = step["digit"]
     return [
         html.H3(f"Step {data["step_index"] + 1} of {len(data["steps"])}"),
         html.P(f"Place digit {digit} at row {y+1} column {x+1} because [reason]."),
@@ -172,7 +173,9 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
         return data
     board = methods.copy_board(data["puzzle"])
     for curr_step_index in range(index + 1):
-        y, x, digit, _ = steps[curr_step_index]
+        step = steps[curr_step_index]
+        y, x = step["position"]
+        digit = step["digit"]
         board[y][x] = digit
     data["board"] = board
     data["step_index"] = index
