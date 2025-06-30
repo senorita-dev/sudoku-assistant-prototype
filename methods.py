@@ -75,12 +75,18 @@ class SudokuManager:
         return new_board
 
     def _get_square(self, y: int, x: int) -> list[int | None]:
+        return [
+            self.board[curr_y][curr_x]
+            for (curr_y, curr_x) in self._get_square_coords(y, x)
+        ]
+
+    def _get_square_coords(self, y: int, x: int) -> list[tuple[int, int]]:
         min_y = (y // 3) * 3
         max_y = (y // 3) * 3 + 3
         min_x = (x // 3) * 3
         max_x = (x // 3) * 3 + 3
         return [
-            self.board[curr_y][curr_x]
+            (curr_y, curr_x)
             for curr_x in range(min_x, max_x)
             for curr_y in range(min_y, max_y)
         ]
@@ -102,14 +108,26 @@ class SudokuManager:
         self.puzzle = copy_board(self.board)
         return solvable
 
-    def _update_candidates_for_new_cell(self, y: int, x: int):
+    def _update_candidates_for_new_cell(self, y: int, x: int) -> list[tuple[int, int]]:
+        removed_candidates = []
         digit = self.board[y][x]
-        for cells in (self.board[y], self._get_transpose()[x], self._get_square(y, x)):
-            for cell in cells:
-                if not isinstance(cell, list) or digit not in cell:
-                    continue
-                cell.remove(digit)
-        return
+        for curr_x, cell in enumerate(self.board[y]):
+            if not isinstance(cell, list) or digit not in cell:
+                continue
+            cell.remove(digit)
+            removed_candidates.append((y, curr_x))
+        for curr_y, cell in enumerate(self._get_transpose()[x]):
+            if not isinstance(cell, list) or digit not in cell:
+                continue
+            cell.remove(digit)
+            removed_candidates.append((curr_y, x))
+        for curr_y, curr_x in self._get_square_coords(y, x):
+            cell = self.board[curr_y][curr_x]
+            if not isinstance(cell, list) or digit not in cell:
+                continue
+            cell.remove(digit)
+            removed_candidates.append((curr_y, curr_x))
+        return removed_candidates
 
     def _naked_single(self) -> bool:
         progress_made = False
@@ -119,9 +137,8 @@ class SudokuManager:
                 if not isinstance(cell, list) or len(cell) != 1:
                     continue
                 digit = cell[0]
-                step: Step = (y, x, digit)
-                self.steps.append(step)
                 self.board[y][x] = digit
-                self._update_candidates_for_new_cell(y, x)
+                step: Step = (y, x, digit, self._update_candidates_for_new_cell(y, x))
+                self.steps.append(step)
                 progress_made = True
         return progress_made

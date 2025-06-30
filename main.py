@@ -48,7 +48,7 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
         return [html.H3(f"Step 0 of {len(data["steps"])}")]
 
     step = data["steps"][data["step_index"]]
-    (y, x, digit) = step
+    y, x, digit, removed_positions = step
     return [
         html.H3(f"Step {data["step_index"] + 1} of {len(data["steps"])}"),
         html.P(f"Place digit {digit} at row {y+1} column {x+1} because [reason]."),
@@ -138,38 +138,30 @@ def update_sudoku_data(
 
     steps = data["steps"]
     index = data["step_index"]
-
-    if ctx.triggered_id == "jump-to-start-btn":
-        if index == -1:
+    match ctx.triggered_id:
+        case "jump-to-start-btn":
+            if index == -1:
+                return no_update, no_update, no_update, no_update
+            data["step_index"] = -1
+        case "previous-btn":
+            if index == -1:
+                return no_update, no_update, no_update, no_update
+            data["step_index"] -= 1
+        case "next-btn":
+            if index == len(steps) - 1:
+                return no_update, no_update, no_update, no_update
+            data["step_index"] += 1
+        case "jump-to-end-btn":
+            if index == len(steps) - 1:
+                return no_update, no_update, no_update, no_update
+            data["step_index"] = len(steps) - 1
+        case "step-index-slider":
+            if index == step_index_slider_value - 1:
+                return no_update, no_update, no_update, no_update
+            data["step_index"] = step_index_slider_value - 1
+        case _:
             return no_update, no_update, no_update, no_update
-        data["step_index"] = -1
-        return apply_steps(data), no_update, no_update, data["step_index"] + 1
-
-    if ctx.triggered_id == "previous-btn":
-        if index == -1:
-            return no_update, no_update, no_update, no_update
-        data["step_index"] -= 1
-        return apply_steps(data), no_update, no_update, data["step_index"] + 1
-
-    if ctx.triggered_id == "next-btn":
-        if index == len(steps) - 1:
-            return no_update, no_update, no_update, no_update
-        data["step_index"] += 1
-        return apply_steps(data), no_update, no_update, data["step_index"] + 1
-
-    if ctx.triggered_id == "jump-to-end-btn":
-        if index == len(steps) - 1:
-            return no_update, no_update, no_update, no_update
-        data["step_index"] = len(steps) - 1
-        return apply_steps(data), no_update, no_update, data["step_index"] + 1
-
-    if ctx.triggered_id == "step-index-slider":
-        if index == step_index_slider_value - 1:
-            return no_update, no_update, no_update, no_update
-        data["step_index"] = step_index_slider_value - 1
-        return apply_steps(data), no_update, no_update, data["step_index"] + 1
-
-    return no_update, no_update, no_update, no_update
+    return apply_steps(data), no_update, no_update, data["step_index"] + 1
 
 
 def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
@@ -180,7 +172,7 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
         return data
     board = methods.copy_board(data["puzzle"])
     for curr_step_index in range(index + 1):
-        y, x, digit = steps[curr_step_index]
+        y, x, digit, _ = steps[curr_step_index]
         board[y][x] = digit
     data["board"] = board
     data["step_index"] = index
