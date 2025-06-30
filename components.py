@@ -47,8 +47,8 @@ def candidates_cell(digits: list[int]):
                 digit if digit in digits else "",
                 style={
                     "display": "flex",
-                    "justify-content": "center",
-                    "align-items": "center",
+                    "justifyContent": "center",
+                    "alignUtems": "center",
                     "overflow": "hidden",
                 },
             )
