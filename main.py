@@ -61,9 +61,7 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
     Input("sudoku-data", "data"),
 )
 def render_sudoku_board(data: type_defs.SudokuData | None):
-    if data is None:
-        return components.sudoku_table(methods.empty_board())
-    return components.sudoku_table(data["board"])
+    return components.sudoku_table(data)
 
 
 @app.callback(
@@ -177,6 +175,9 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
         y, x = step["position"]
         digit = step["digit"]
         board[y][x] = digit
+        if curr_step_index < index:
+            for [curr_y, curr_x] in step["candidates_removed_positions"]:
+                board[curr_y][curr_x].remove(digit)
     data["board"] = board
     data["step_index"] = index
     return data
