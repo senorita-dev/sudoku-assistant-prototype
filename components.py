@@ -48,7 +48,7 @@ def candidates_cell(digits: list[int]):
                 style={
                     "display": "flex",
                     "justifyContent": "center",
-                    "alignUtems": "center",
+                    "alignItems": "center",
                     "overflow": "hidden",
                 },
             )
