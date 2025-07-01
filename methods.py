@@ -22,7 +22,7 @@ class SudokuManager:
     def logic_solve(self) -> bool:
         if not self._candidates_board():
             return False
-        solving_methods = [self._naked_single]
+        solving_methods = [self._naked_single, self._hidden_single]
         progress_made = True
         while progress_made:
             progress_made = False
@@ -132,3 +132,36 @@ class SudokuManager:
                 self.steps.append(step)
                 progress_made = True
         return progress_made
+
+    def _hidden_single(self) -> bool:
+        rows_digit_map = [{digit: [] for digit in range(1, 10)} for _ in range(9)]
+        cols_digit_map = [{digit: [] for digit in range(1, 10)} for _ in range(9)]
+        squares_digit_map = [{digit: [] for digit in range(1, 10)} for _ in range(9)]
+        for y in range(9):
+            for x in range(9):
+                cell = self.board[y][x]
+                if not isinstance(cell, list):
+                    continue
+                for digit in cell:
+                    rows_digit_map[y][digit].append((y, x))
+                    cols_digit_map[x][digit].append((y, x))
+                    square_index = (y // 3) * 3 + (x // 3)
+                    squares_digit_map[square_index][digit].append((y, x))
+        for digits_map in (rows_digit_map, cols_digit_map, squares_digit_map):
+            for digit_map in digits_map:
+                for digit, positions in digit_map.items():
+                    if len(positions) != 1:
+                        continue
+                    y, x = positions[0]
+                    self.board[y][x] = digit
+                    step: Step = {
+                        "type": "fill",
+                        "digit": digit,
+                        "position": (y, x),
+                        "candidates_removed_positions": self._update_candidates_for_new_cell(
+                            y, x
+                        ),
+                    }
+                    self.steps.append(step)
+                    return True
+        return False
