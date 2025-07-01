@@ -52,6 +52,7 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
     digit = step["digit"]
     return [
         html.H3(f"Step {data["step_index"] + 1} of {len(data["steps"])}"),
+        html.B(step["name"]),
         html.P(f"Place digit {digit} at row {y+1} column {x+1} because [reason]."),
     ]
 

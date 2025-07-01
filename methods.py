@@ -123,6 +123,7 @@ class SudokuManager:
                 self.board[y][x] = digit
                 step: Step = {
                     "type": "fill",
+                    "name": "Naked Single",
                     "digit": digit,
                     "position": (y, x),
                     "candidates_removed_positions": self._update_candidates_for_new_cell(
@@ -156,6 +157,7 @@ class SudokuManager:
                     self.board[y][x] = digit
                     step: Step = {
                         "type": "fill",
+                        "name": "Hidden Single",
                         "digit": digit,
                         "position": (y, x),
                         "candidates_removed_positions": self._update_candidates_for_new_cell(

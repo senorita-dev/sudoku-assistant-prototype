@@ -7,6 +7,7 @@ CandidatesBoard = list[list[list[int] | int | None]]
 
 class FillStep(TypedDict):
     type: Literal["fill"]
+    name: str
     position: tuple[int, int]
     digit: int
     candidates_removed_positions: list[tuple[int, int]]
@@ -14,6 +15,7 @@ class FillStep(TypedDict):
 
 class ReduceStep(TypedDict):
     type: Literal["reduce"]
+    name: str
     positions: list[tuple[int, int]]
     digits: list[int]
     candidates_removed_positions: list[tuple[int, int]]
