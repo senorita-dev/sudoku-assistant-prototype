@@ -22,7 +22,7 @@ class SudokuManager:
     def logic_solve(self) -> bool:
         if not self._candidates_board():
             return False
-        solving_methods = [self._naked_single, self._hidden_single]
+        solving_methods = [self._naked_single, self._hidden_single, self._naked_pair]
         progress_made = True
         while progress_made:
             progress_made = False
@@ -166,4 +166,109 @@ class SudokuManager:
                     }
                     self.steps.append(step)
                     return True
+        return False
+
+    def _naked_pair(self) -> bool:
+        def remove_candidates(
+            pair: tuple[int, int], candidate_positions: set[tuple[int, int]]
+        ):
+            for curr_y, curr_x in candidate_positions:
+                for digit in pair:
+                    if digit not in self.board[curr_y][curr_x]:
+                        continue
+                    self.board[curr_y][curr_x].remove(digit)
+            return
+
+        def append_step(
+            pair: tuple[int, int],
+            positions: list[tuple[int, int]],
+            candidate_positions: set[tuple[int, int]],
+        ):
+            step: Step = {
+                "type": "reduce",
+                "name": "Naked Pair",
+                "digits": pair,
+                "positions": positions,
+                "candidates_removed_positions": candidate_positions,
+            }
+            self.steps.append(step)
+            return
+
+        candidate_pos_map = {digit: [] for digit in range(1, 10)}
+        rows_pairs_map = [{} for _ in range(9)]
+        cols_pairs_map = [{} for _ in range(9)]
+        squares_pairs_map = [{} for _ in range(9)]
+        for y in range(9):
+            for x in range(9):
+                cell = self.board[y][x]
+                if not isinstance(cell, list):
+                    continue
+                for digit in cell:
+                    candidate_pos_map[digit].append((y, x))
+                if len(cell) != 2:
+                    continue
+                pair = tuple(cell)
+                if pair not in rows_pairs_map[y]:
+                    rows_pairs_map[y][pair] = []
+                rows_pairs_map[y][pair].append((y, x))
+                if pair not in cols_pairs_map[x]:
+                    cols_pairs_map[x][pair] = []
+                cols_pairs_map[x][pair].append((y, x))
+                square_index = (y // 3) * 3 + (x // 3)
+                if pair not in squares_pairs_map[square_index]:
+                    squares_pairs_map[square_index][pair] = []
+                squares_pairs_map[square_index][pair].append((y, x))
+        for y, pair_map in enumerate(rows_pairs_map):
+            for pair, positions in pair_map.items():
+                if len(positions) != 2:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[pair[0]] + candidate_pos_map[pair[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions = [
+                    pos for pos in candidate_positions if pos[0] == y
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(pair, candidate_positions)
+                append_step(pair, positions, candidate_positions)
+                return True
+        for x, pair_map in enumerate(cols_pairs_map):
+            for pair, positions in pair_map.items():
+                if len(positions) != 2:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[pair[0]] + candidate_pos_map[pair[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions = [
+                    pos for pos in candidate_positions if pos[1] == x
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(pair, candidate_positions)
+                append_step(pair, positions, candidate_positions)
+                return True
+        for square_index, pair_map in enumerate(squares_pairs_map):
+            for pair, positions in pair_map.items():
+                if len(positions) != 2:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[pair[0]] + candidate_pos_map[pair[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions = [
+                    (y, x)
+                    for (y, x) in candidate_positions
+                    if (y // 3) * 3 + (x // 3) == square_index
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(pair, candidate_positions)
+                append_step(pair, positions, candidate_positions)
+                return True
         return False

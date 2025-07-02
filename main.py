@@ -3,6 +3,7 @@ import components
 import methods
 import type_defs
 
+
 app = Dash(__name__)
 
 
@@ -48,12 +49,22 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
         return [html.H3(f"Step 0 of {len(data["steps"])}")]
 
     step = data["steps"][data["step_index"]]
-    y, x = step["position"]
-    digit = step["digit"]
+    if step["type"] == "fill":
+        y, x = step["position"]
+        digit = step["digit"]
+        explanation = html.P(
+            f"Place digit {digit} at row {y+1} column {x+1} because [reason]."
+        )
+    else:
+        positions = [(y + 1, x + 1) for (y, x) in step["candidates_removed_positions"]]
+        digits = step["digits"]
+        explanation = html.P(
+            f"Remove candidates {digits} at positions {positions} because [reason]."
+        )
     return [
         html.H3(f"Step {data["step_index"] + 1} of {len(data["steps"])}"),
         html.B(step["name"]),
-        html.P(f"Place digit {digit} at row {y+1} column {x+1} because [reason]."),
+        explanation,
     ]
 
 
@@ -173,12 +184,22 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
     board = methods.copy_board(data["puzzle"])
     for curr_step_index in range(index + 1):
         step = steps[curr_step_index]
-        y, x = step["position"]
-        digit = step["digit"]
-        board[y][x] = digit
-        if curr_step_index < index:
-            for [curr_y, curr_x] in step["candidates_removed_positions"]:
-                board[curr_y][curr_x].remove(digit)
+        if step["type"] == "fill":
+            y, x = step["position"]
+            digit = step["digit"]
+            board[y][x] = digit
+            if curr_step_index < index:
+                for [curr_y, curr_x] in step["candidates_removed_positions"]:
+                    board[curr_y][curr_x].remove(digit)
+        else:
+            digits = step["digits"]
+            for y, x in step["positions"]:
+                board[y][x] = digits.copy()
+            for digit in digits:
+                for [curr_y, curr_x] in step["candidates_removed_positions"]:
+                    if digit not in board[curr_y][curr_x]:
+                        continue
+                    board[curr_y][curr_x].remove(digit)
     data["board"] = board
     data["step_index"] = index
     return data
