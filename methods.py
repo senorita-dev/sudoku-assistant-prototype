@@ -28,6 +28,7 @@ class SudokuManager:
             self._naked_pair,
             self._naked_triple,
             self._pointing_pair_or_triple,
+            self._claiming_pair_or_triple,
         ]
         progress_made = True
         while progress_made:
@@ -456,4 +457,71 @@ class SudokuManager:
                     for y, x in outside_positions:
                         self.board[y][x].remove(digit)
                     return True
+        return False
+
+    def _claiming_pair_or_triple(self) -> bool:
+        rows_digit_map = [{digit: [] for digit in range(1, 10)} for _ in range(9)]
+        cols_digit_map = [{digit: [] for digit in range(1, 10)} for _ in range(9)]
+        for y in range(9):
+            for x in range(9):
+                cell = self.board[y][x]
+                if not isinstance(cell, list):
+                    continue
+                for digit in cell:
+                    rows_digit_map[y][digit].append(x)
+                    cols_digit_map[x][digit].append(y)
+        for y, digit_map in enumerate(rows_digit_map):
+            for digit, cols in digit_map.items():
+                square_cols = {x // 3 for x in cols}
+                if len(square_cols) != 1:
+                    continue
+                x = square_cols.pop() * 3
+                positions = []
+                for curr_y, curr_x in self._get_square_coords(y, x):
+                    if y == curr_y:
+                        continue
+                    cell = self.board[curr_y][curr_x]
+                    if not isinstance(cell, list) or digit not in cell:
+                        continue
+                    positions.append((curr_y, curr_x))
+                if len(positions) == 0:
+                    continue
+                step: Step = {
+                    "type": "reduce",
+                    "name": f"Claiming {"Pair" if len(cols) == 2 else "Triple"}",
+                    "positions": [(y, curr_x) for curr_x in rows_digit_map[y][digit]],
+                    "removed_digits": [digit],
+                    "candidates_removed_positions": positions,
+                }
+                self.steps.append(step)
+                for curr_y, curr_x in positions:
+                    self.board[curr_y][curr_x].remove(digit)
+                return True
+        for x, digit_map in enumerate(cols_digit_map):
+            for digit, rows in digit_map.items():
+                square_rows = {y // 3 for y in rows}
+                if len(square_rows) != 1:
+                    continue
+                y = square_rows.pop() * 3
+                positions = []
+                for curr_y, curr_x in self._get_square_coords(y, x):
+                    if x == curr_x:
+                        continue
+                    cell = self.board[curr_y][curr_x]
+                    if not isinstance(cell, list) or digit not in cell:
+                        continue
+                    positions.append((curr_y, curr_x))
+                if len(positions) == 0:
+                    continue
+                step: Step = {
+                    "type": "reduce",
+                    "name": f"Claiming {"Pair" if len(cols) == 2 else "Triple"}",
+                    "positions": [(curr_y, x) for curr_y in cols_digit_map[x][digit]],
+                    "removed_digits": [digit],
+                    "candidates_removed_positions": positions,
+                }
+                self.steps.append(step)
+                for curr_y, curr_x in positions:
+                    self.board[curr_y][curr_x].remove(digit)
+                return True
         return False
