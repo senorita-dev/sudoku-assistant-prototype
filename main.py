@@ -32,7 +32,6 @@ app.layout = html.Div(
         ),
         html.Div(id="sudoku-step"),
     ],
-    style={"display": "inline-block"},
 )
 
 
