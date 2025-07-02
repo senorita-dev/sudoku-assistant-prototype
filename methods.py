@@ -31,6 +31,8 @@ class SudokuManager:
         ]
         progress_made = True
         while progress_made:
+            if self._find_next_empty_pos() is None:
+                return True
             progress_made = False
             for method in solving_methods:
                 if not method():
@@ -39,10 +41,10 @@ class SudokuManager:
                 break
         return False
 
-    def _find_next_empty_pos(self, board: Board) -> tuple[int, int] | None:
+    def _find_next_empty_pos(self) -> tuple[int, int] | None:
         for y in range(9):
             for x in range(9):
-                if board[y][x] is not None:
+                if not isinstance(self.board[y][x], int):
                     continue
                 return (y, x)
         return None
