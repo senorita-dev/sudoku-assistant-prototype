@@ -2,11 +2,18 @@ from dash import html
 import type_defs
 
 
-def sudoku_table(data: type_defs.SudokuData | None) -> html.Table:
+def sudoku_table(
+    data: type_defs.SudokuData | None, view_board_details: bool
+) -> html.Table:
     return html.Table(
         [
             html.Tbody(
-                [html.Tr([sudoku_cell(data, y, x) for x in range(9)]) for y in range(9)]
+                [
+                    html.Tr(
+                        [sudoku_cell(data, y, x, view_board_details) for x in range(9)]
+                    )
+                    for y in range(9)
+                ]
             )
         ],
         style={
@@ -17,7 +24,9 @@ def sudoku_table(data: type_defs.SudokuData | None) -> html.Table:
     )
 
 
-def sudoku_cell(data: type_defs.SudokuData | None, y: int, x: int):
+def sudoku_cell(
+    data: type_defs.SudokuData | None, y: int, x: int, view_board_details: bool
+):
     style = {
         "width": "40px",
         "height": "40px",
@@ -39,7 +48,7 @@ def sudoku_cell(data: type_defs.SudokuData | None, y: int, x: int):
                 ""
                 if cell is None
                 else (
-                    candidates_cell(y, x, cell, None)
+                    candidates_cell(y, x, cell, None, True)
                     if isinstance(cell, list)
                     else cell
                 )
@@ -47,12 +56,12 @@ def sudoku_cell(data: type_defs.SudokuData | None, y: int, x: int):
             style=style,
         )
     step = steps[step_index]
-    if step["type"] == "fill":
+    if view_board_details and step["type"] == "fill":
         [new_y, new_x] = step["position"]
         style = style | {
             "backgroundColor": "lightgreen" if y == new_y and x == new_x else None
         }
-    else:
+    if view_board_details and step["type"] == "reduce":
         positions = step["positions"]
         style = style | {
             "backgroundColor": "lightblue" if [y, x] in positions else None
@@ -61,13 +70,23 @@ def sudoku_cell(data: type_defs.SudokuData | None, y: int, x: int):
         (
             ""
             if cell is None
-            else (candidates_cell(y, x, cell, step) if isinstance(cell, list) else cell)
+            else (
+                candidates_cell(y, x, cell, step, view_board_details)
+                if isinstance(cell, list)
+                else cell
+            )
         ),
         style=style,
     )
 
 
-def candidates_cell(y: int, x: int, digits: list[int], step: type_defs.Step | None):
+def candidates_cell(
+    y: int,
+    x: int,
+    digits: list[int],
+    step: type_defs.Step | None,
+    view_board_details: bool,
+):
     divStyle = {
         "display": "grid",
         "gridTemplateRows": "repeat(3, 1fr)",
@@ -85,7 +104,7 @@ def candidates_cell(y: int, x: int, digits: list[int], step: type_defs.Step | No
         "padding": "4px",
         "borderRadius": "32px",
     }
-    if step is None:
+    if step is None or not view_board_details:
         return html.Div(
             [
                 html.Span(digit if digit in digits else "", style=spanStyle)

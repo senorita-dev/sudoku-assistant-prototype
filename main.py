@@ -1,4 +1,5 @@
 from dash import Dash, Input, Output, State, ctx, dcc, html, no_update
+import dash_bootstrap_components as dbc
 import components
 import methods
 import type_defs
@@ -19,6 +20,12 @@ app.layout = html.Div(
                 html.Button("◀", id="previous-btn"),
                 html.Button("▶", id="next-btn"),
                 html.Button("⏭", id="jump-to-end-btn"),
+                dbc.Checkbox(
+                    id="view-board-details-toggle",
+                    value=True,
+                    persistence_type="local",
+                    label="View board details",
+                ),
                 dcc.Slider(
                     id="step-index-slider",
                     min=None,
@@ -70,9 +77,13 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
 @app.callback(
     Output("sudoku-div", "children"),
     Input("sudoku-data", "data"),
+    Input("view-board-details-toggle", "value"),
 )
-def render_sudoku_board(data: type_defs.SudokuData | None):
-    return components.sudoku_table(data)
+def render_sudoku_board(data: type_defs.SudokuData | None, view_board_details: bool):
+    return components.sudoku_table(
+        apply_steps(data, view_board_details) if data is not None else None,
+        view_board_details,
+    )
 
 
 @app.callback(
@@ -171,10 +182,12 @@ def update_sudoku_data(
             data["step_index"] = step_index_slider_value - 1
         case _:
             return no_update, no_update, no_update, no_update
-    return apply_steps(data), no_update, no_update, data["step_index"] + 1
+    return data, no_update, no_update, data["step_index"] + 1
 
 
-def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
+def apply_steps(
+    data: type_defs.SudokuData, view_board_details: bool
+) -> type_defs.SudokuData:
     steps = data["steps"]
     index = data["step_index"]
     if index < -1 or index > len(steps):
@@ -187,13 +200,13 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
             y, x = step["position"]
             digit = step["digit"]
             board[y][x] = digit
-            if curr_step_index == index:
+            if curr_step_index == index and view_board_details:
                 continue
             for [curr_y, curr_x] in step["candidates_removed_positions"]:
                 board[curr_y][curr_x].remove(digit)
         else:
             removed_digits = step["removed_digits"]
-            if curr_step_index == index:
+            if curr_step_index == index and view_board_details:
                 continue
             for digit in removed_digits:
                 for [curr_y, curr_x] in step["candidates_removed_positions"]:
