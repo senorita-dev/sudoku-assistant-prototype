@@ -22,7 +22,12 @@ class SudokuManager:
     def logic_solve(self) -> bool:
         if not self._candidates_board():
             return False
-        solving_methods = [self._naked_single, self._hidden_single, self._naked_pair]
+        solving_methods = [
+            self._naked_single,
+            self._hidden_single,
+            self._naked_pair,
+            self._naked_triple,
+        ]
         progress_made = True
         while progress_made:
             progress_made = False
@@ -270,5 +275,113 @@ class SudokuManager:
                     continue
                 remove_candidates(pair, candidate_positions)
                 append_step(pair, positions, candidate_positions)
+                return True
+        return False
+
+    def _naked_triple(self) -> bool:
+        def remove_candidates(
+            triple: tuple[int, int], candidate_positions: set[tuple[int, int]]
+        ):
+            for curr_y, curr_x in candidate_positions:
+                for digit in triple:
+                    if digit not in self.board[curr_y][curr_x]:
+                        continue
+                    self.board[curr_y][curr_x].remove(digit)
+            return
+
+        def append_step(
+            triple: tuple[int, int],
+            positions: list[tuple[int, int]],
+            candidate_positions: set[tuple[int, int]],
+        ):
+            step: Step = {
+                "type": "reduce",
+                "name": "Naked Triple",
+                "digits": triple,
+                "positions": positions,
+                "candidates_removed_positions": candidate_positions,
+            }
+            self.steps.append(step)
+            return
+
+        candidate_pos_map = {digit: [] for digit in range(1, 10)}
+        rows_triples_map = [{} for _ in range(9)]
+        cols_triples_map = [{} for _ in range(9)]
+        squares_triples_map = [{} for _ in range(9)]
+        for y in range(9):
+            for x in range(9):
+                cell = self.board[y][x]
+                if not isinstance(cell, list):
+                    continue
+                for digit in cell:
+                    candidate_pos_map[digit].append((y, x))
+                if len(cell) != 3:
+                    continue
+                triple = tuple(cell)
+                if triple not in rows_triples_map[y]:
+                    rows_triples_map[y][triple] = []
+                rows_triples_map[y][triple].append((y, x))
+                if triple not in cols_triples_map[x]:
+                    cols_triples_map[x][triple] = []
+                cols_triples_map[x][triple].append((y, x))
+                square_index = (y // 3) * 3 + (x // 3)
+                if triple not in squares_triples_map[square_index]:
+                    squares_triples_map[square_index][triple] = []
+                squares_triples_map[square_index][triple].append((y, x))
+        for y, triple_map in enumerate(rows_triples_map):
+            for triple, positions in triple_map.items():
+                if len(positions) != 3:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[triple[0]] + candidate_pos_map[triple[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions.discard(positions[2])
+                candidate_positions = [
+                    pos for pos in candidate_positions if pos[0] == y
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(triple, candidate_positions)
+                append_step(triple, positions, candidate_positions)
+                return True
+        for x, triple_map in enumerate(cols_triples_map):
+            for triple, positions in triple_map.items():
+                if len(positions) != 3:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[triple[0]] + candidate_pos_map[triple[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions.discard(positions[2])
+                candidate_positions = [
+                    pos for pos in candidate_positions if pos[1] == x
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(triple, candidate_positions)
+                append_step(triple, positions, candidate_positions)
+                return True
+        for square_index, triple_map in enumerate(squares_triples_map):
+            for triple, positions in triple_map.items():
+                if len(positions) != 3:
+                    continue
+                candidate_positions = set(
+                    candidate_pos_map[triple[0]] + candidate_pos_map[triple[1]]
+                )
+                candidate_positions.discard(positions[0])
+                candidate_positions.discard(positions[1])
+                candidate_positions.discard(positions[2])
+                candidate_positions = [
+                    (y, x)
+                    for (y, x) in candidate_positions
+                    if (y // 3) * 3 + (x // 3) == square_index
+                ]
+                if len(candidate_positions) == 0:
+                    continue
+                remove_candidates(triple, candidate_positions)
+                append_step(triple, positions, candidate_positions)
                 return True
         return False
