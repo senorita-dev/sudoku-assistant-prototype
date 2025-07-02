@@ -188,13 +188,16 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
             y, x = step["position"]
             digit = step["digit"]
             board[y][x] = digit
-            if curr_step_index < index:
-                for [curr_y, curr_x] in step["candidates_removed_positions"]:
-                    board[curr_y][curr_x].remove(digit)
+            if curr_step_index == index:
+                continue
+            for [curr_y, curr_x] in step["candidates_removed_positions"]:
+                board[curr_y][curr_x].remove(digit)
         else:
             digits = step["digits"]
             for y, x in step["positions"]:
                 board[y][x] = digits.copy()
+            if curr_step_index == index:
+                continue
             for digit in digits:
                 for [curr_y, curr_x] in step["candidates_removed_positions"]:
                     if digit not in board[curr_y][curr_x]:

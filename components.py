@@ -120,8 +120,6 @@ def candidates_cell(y: int, x: int, digits: list[int], step: type_defs.Step | No
         )
     removed_digits = step["digits"]
     positions = step["candidates_removed_positions"]
-    if [y, x] in positions:
-        digits = digits + removed_digits
     return html.Div(
         [
             html.Span(
@@ -130,12 +128,16 @@ def candidates_cell(y: int, x: int, digits: list[int], step: type_defs.Step | No
                 | {
                     "backgroundColor": (
                         "red"
-                        if digit in removed_digits and [y, x] in positions
+                        if digit in digits
+                        and digit in removed_digits
+                        and [y, x] in positions
                         else None
                     ),
                     "color": (
                         "white"
-                        if digit in removed_digits and [y, x] in positions
+                        if digit in digits
+                        and digit in removed_digits
+                        and [y, x] in positions
                         else None
                     ),
                 },
