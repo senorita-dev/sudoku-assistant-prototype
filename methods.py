@@ -27,6 +27,7 @@ class SudokuManager:
             self._hidden_single,
             self._naked_pair,
             self._naked_triple,
+            self._pointing_pair_or_triple,
         ]
         progress_made = True
         while progress_made:
@@ -192,7 +193,7 @@ class SudokuManager:
             step: Step = {
                 "type": "reduce",
                 "name": "Naked Pair",
-                "digits": pair,
+                "removed_digits": pair,
                 "positions": positions,
                 "candidates_removed_positions": candidate_positions,
             }
@@ -297,7 +298,7 @@ class SudokuManager:
             step: Step = {
                 "type": "reduce",
                 "name": "Naked Triple",
-                "digits": triple,
+                "removed_digits": triple,
                 "positions": positions,
                 "candidates_removed_positions": candidate_positions,
             }
@@ -384,4 +385,73 @@ class SudokuManager:
                 remove_candidates(triple, candidate_positions)
                 append_step(triple, positions, candidate_positions)
                 return True
+        return False
+
+    def _pointing_pair_or_triple(self) -> bool:
+        for square_y in range(0, 9, 3):
+            for square_x in range(0, 9, 3):
+                square_coords = self._get_square_coords(square_y, square_x)
+                digit_positions = {digit: [] for digit in range(1, 10)}
+                for y, x in square_coords:
+                    cell = self.board[y][x]
+                    if not isinstance(cell, list):
+                        continue
+                    for digit in cell:
+                        digit_positions[digit].append((y, x))
+                for digit, positions in digit_positions.items():
+                    rows = {y for (y, _) in positions}
+                    if len(rows) != 1:
+                        continue
+                    y = rows.pop()
+                    outside_positions = []
+                    for x in range(9):
+                        if (y, x) in square_coords:
+                            continue
+                        cell = self.board[y][x]
+                        if not isinstance(cell, list):
+                            continue
+                        if digit not in cell:
+                            continue
+                        outside_positions.append((y, x))
+                    if len(outside_positions) == 0:
+                        continue
+                    step: Step = {
+                        "type": "reduce",
+                        "name": f"Pointing {"Pair" if len(positions) == 2 else "Triple"}",
+                        "removed_digits": [digit],
+                        "positions": positions,
+                        "candidates_removed_positions": outside_positions,
+                    }
+                    self.steps.append(step)
+                    for y, x in outside_positions:
+                        self.board[y][x].remove(digit)
+                    return True
+                for digit, positions in digit_positions.items():
+                    cols = {x for (_, x) in positions}
+                    if len(cols) != 1:
+                        continue
+                    x = cols.pop()
+                    outside_positions = []
+                    for y in range(9):
+                        if (y, x) in square_coords:
+                            continue
+                        cell = self.board[y][x]
+                        if not isinstance(cell, list):
+                            continue
+                        if digit not in cell:
+                            continue
+                        outside_positions.append((y, x))
+                    if len(outside_positions) == 0:
+                        continue
+                    step: Step = {
+                        "type": "reduce",
+                        "name": f"Pointing {"Pair" if len(positions) == 2 else "Triple"}",
+                        "removed_digits": [digit],
+                        "positions": positions,
+                        "candidates_removed_positions": outside_positions,
+                    }
+                    self.steps.append(step)
+                    for y, x in outside_positions:
+                        self.board[y][x].remove(digit)
+                    return True
         return False

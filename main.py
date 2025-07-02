@@ -57,9 +57,9 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
         )
     else:
         positions = [(y + 1, x + 1) for (y, x) in step["candidates_removed_positions"]]
-        digits = step["digits"]
+        removed_digits = step["removed_digits"]
         explanation = html.P(
-            f"Remove candidates {digits} at positions {positions} because [reason]."
+            f"Remove candidates {removed_digits} at positions {positions} because [reason]."
         )
     return [
         html.H3(f"Step {data["step_index"] + 1} of {len(data["steps"])}"),
@@ -193,12 +193,10 @@ def apply_steps(data: type_defs.SudokuData) -> type_defs.SudokuData:
             for [curr_y, curr_x] in step["candidates_removed_positions"]:
                 board[curr_y][curr_x].remove(digit)
         else:
-            digits = step["digits"]
-            for y, x in step["positions"]:
-                board[y][x] = digits.copy()
+            removed_digits = step["removed_digits"]
             if curr_step_index == index:
                 continue
-            for digit in digits:
+            for digit in removed_digits:
                 for [curr_y, curr_x] in step["candidates_removed_positions"]:
                     if digit not in board[curr_y][curr_x]:
                         continue

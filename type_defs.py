@@ -17,7 +17,7 @@ class ReduceStep(TypedDict):
     type: Literal["reduce"]
     name: str
     positions: list[tuple[int, int]]
-    digits: list[int]
+    removed_digits: list[int]
     candidates_removed_positions: list[tuple[int, int]]
 
 

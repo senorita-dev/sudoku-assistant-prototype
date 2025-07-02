@@ -118,7 +118,7 @@ def candidates_cell(y: int, x: int, digits: list[int], step: type_defs.Step | No
             ],
             style=divStyle,
         )
-    removed_digits = step["digits"]
+    removed_digits = step["removed_digits"]
     positions = step["candidates_removed_positions"]
     return html.Div(
         [
