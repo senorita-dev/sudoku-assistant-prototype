@@ -5,14 +5,35 @@ import methods
 import type_defs
 
 
-app = Dash(__name__)
+app = Dash(
+    __name__,
+    title="Sudoku Assistant (prototype)",
+    update_title="",
+)
 
 
 app.layout = html.Div(
     html.Div(
         [
             dcc.Store(id="sudoku-data", storage_type="memory"),
-            html.H1("Sudoku"),
+            html.H1("Sudoku Assistant (prototype)"),
+            html.Div(
+                [
+                    html.A(
+                        "Github",
+                        href="https://github.com/senorita-dev",
+                        target="_blank",
+                        rel="noopener noreferrer",
+                    ),
+                    html.A(
+                        "Website",
+                        href="https://rensaito.com/",
+                        target="_blank",
+                        rel="noopener noreferrer",
+                    ),
+                ],
+                style={"display": "flex", "justifyContent": "center", "gap": "1rem"},
+            ),
             html.Div(id="sudoku-div"),
             html.Button("New", id="new-btn"),
             html.Div(
