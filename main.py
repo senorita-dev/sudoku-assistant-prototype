@@ -60,7 +60,11 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
         ]
 
     if data["step_index"] == -1:
-        return [html.H3(f"Step 0 of {len(data["steps"])}")]
+        return [
+            html.H3(f"Step 0 of {len(data["steps"])}"),
+            html.B("Initial Candidate Elimination"),
+            html.P("List all possible candidates for every unsolved cell."),
+        ]
 
     step = data["steps"][data["step_index"]]
     if step["type"] == "fill":
