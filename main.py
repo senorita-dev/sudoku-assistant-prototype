@@ -31,6 +31,12 @@ app.layout = html.Div(
                         target="_blank",
                         rel="noopener noreferrer",
                     ),
+                    html.A(
+                        "Full Version",
+                        href="https://rensaito.com/projects/sudoku-assistant",
+                        target="_blank",
+                        rel="noopener noreferrer",
+                    ),
                 ],
                 style={"display": "flex", "justifyContent": "center", "gap": "1rem"},
             ),
