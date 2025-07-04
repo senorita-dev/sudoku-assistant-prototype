@@ -51,6 +51,14 @@ def render_sudoku_step(data: type_defs.SudokuData | None):
     if data is None:
         return no_update
 
+    if len(data["steps"]) == 0:
+        return [
+            html.H3("No logical next steps found."),
+            html.P(
+                "Try creating another Sudoku board or lowering the difficulty first."
+            ),
+        ]
+
     if data["step_index"] == -1:
         return [html.H3(f"Step 0 of {len(data["steps"])}")]
 
@@ -92,7 +100,7 @@ def render_sudoku_board(data: type_defs.SudokuData | None, view_board_details: b
     Input("sudoku-data", "data"),
 )
 def toggle_solution_controls_display(style, data: type_defs.SudokuData | None):
-    if data is None:
+    if data is None or len(data["steps"]) == 0:
         return {"display": "none"}
     try:
         if style["display"] == "block":
