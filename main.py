@@ -16,8 +16,15 @@ app.layout = html.Div(
     html.Div(
         [
             dcc.Store(id="sudoku-data", storage_type="memory"),
-            html.H1("Sudoku Assistant (prototype)"),
-            html.Div(
+            html.H1(
+                "Sudoku Assistant (prototype)",
+                style={"fontSize": "1.5rem", "textAlign": "center"},
+            ),
+            html.P(
+                "Sudoku Assistant prototype built with Python and Dash.",
+                style={"textAlign": "center"},
+            ),
+            html.P(
                 [
                     html.A(
                         "Github",
