@@ -15,7 +15,10 @@ def copy_board(board: CandidatesBoard) -> CandidatesBoard:
 
 class SudokuManager:
     def __init__(self):
-        self.puzzle: Board = Sudoku(seed=randrange(sys.maxsize)).difficulty(0.6).board
+        new_puzzle = Sudoku(seed=randrange(sys.maxsize)).difficulty(0.6)
+        while new_puzzle.has_multiple_solutions():
+            new_puzzle = Sudoku(seed=randrange(sys.maxsize)).difficulty(0.6)
+        self.puzzle: Board = new_puzzle.board
         self.board: Board = copy_board(self.puzzle)
         self.steps: list[Step] = []
 
