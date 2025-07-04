@@ -9,36 +9,40 @@ app = Dash(__name__)
 
 
 app.layout = html.Div(
-    [
-        dcc.Store(id="sudoku-data", storage_type="memory"),
-        html.H1("Sudoku"),
-        html.Div(id="sudoku-div"),
-        html.Button("New", id="new-btn"),
-        html.Div(
-            [
-                html.Button("⏮", id="jump-to-start-btn"),
-                html.Button("◀", id="previous-btn"),
-                html.Button("▶", id="next-btn"),
-                html.Button("⏭", id="jump-to-end-btn"),
-                dbc.Checkbox(
-                    id="view-board-details-toggle",
-                    value=True,
-                    persistence_type="local",
-                    label="View board details",
-                ),
-                dcc.Slider(
-                    id="step-index-slider",
-                    min=None,
-                    max=None,
-                    step=1,
-                    marks=None,
-                    tooltip={"always_visible": True, "placement": "bottom"},
-                ),
-            ],
-            id="sudoku-solution-controls",
-        ),
-        html.Div(id="sudoku-step"),
-    ],
+    html.Div(
+        [
+            dcc.Store(id="sudoku-data", storage_type="memory"),
+            html.H1("Sudoku"),
+            html.Div(id="sudoku-div"),
+            html.Button("New", id="new-btn"),
+            html.Div(
+                [
+                    html.Button("⏮", id="jump-to-start-btn"),
+                    html.Button("◀", id="previous-btn"),
+                    html.Button("▶", id="next-btn"),
+                    html.Button("⏭", id="jump-to-end-btn"),
+                    dbc.Checkbox(
+                        id="view-board-details-toggle",
+                        value=True,
+                        persistence_type="local",
+                        label="View board details",
+                    ),
+                    dcc.Slider(
+                        id="step-index-slider",
+                        min=None,
+                        max=None,
+                        step=1,
+                        marks=None,
+                        tooltip={"always_visible": True, "placement": "bottom"},
+                    ),
+                ],
+                id="sudoku-solution-controls",
+            ),
+            html.Div(id="sudoku-step"),
+        ],
+        style={"maxWidth": "920px"},
+    ),
+    style={"display": "flex", "justifyContent": "center"},
 )
 
 
