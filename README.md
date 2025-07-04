@@ -4,7 +4,7 @@ A web-based Sudoku solving assistant that demonstrates step-by-step logical solv
 
 ## 🔗 Links
 
-- **🚀 [Live Demo](https://rensaito.com/sudoku-assistant-prototype)** - Try the application in your browser
+- **🚀 [Live Demo](https://rensaito.com/projects/sudoku-assistant-prototype)** - Try the application in your browser
 - **✨ [Full Version](https://github.com/senorita-dev/sudoku-assistant)** - Full version with additional features _(coming soon)_
 
 > **Note**: This is a prototype version. For the latest features and improvements, check out the full version linked above.
