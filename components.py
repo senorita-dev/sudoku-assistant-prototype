@@ -86,8 +86,8 @@ def candidates_cell(
         "display": "grid",
         "gridTemplateRows": "repeat(3, 1fr)",
         "gridTemplateColumns": "repeat(3, 1fr)",
-        "width": "inherit",
-        "height": "inherit",
+        "width": "100%",
+        "height": "100%",
         "overflow": "hidden",
         "fontSize": "10px",
     }
@@ -96,7 +96,6 @@ def candidates_cell(
         "justifyContent": "center",
         "alignItems": "center",
         "overflow": "hidden",
-        "padding": "4px",
         "borderRadius": "32px",
     }
     if step is None or not view_board_details:
