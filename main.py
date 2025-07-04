@@ -11,6 +11,7 @@ app = Dash(
     update_title="",
 )
 
+server = app.server
 
 app.layout = html.Div(
     html.Div(
