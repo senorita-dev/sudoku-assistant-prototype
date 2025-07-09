@@ -29,19 +29,13 @@ app.layout = html.Div(
                 [
                     html.A(
                         "Github",
-                        href="https://github.com/senorita-dev",
+                        href="https://github.com/senorita-dev/sudoku-assistant-prototype",
                         target="_blank",
                         rel="noopener noreferrer",
                     ),
                     html.A(
                         "Website",
                         href="https://rensaito.com/",
-                        target="_blank",
-                        rel="noopener noreferrer",
-                    ),
-                    html.A(
-                        "Full Version",
-                        href="https://rensaito.com/projects/sudoku-assistant",
                         target="_blank",
                         rel="noopener noreferrer",
                     ),
